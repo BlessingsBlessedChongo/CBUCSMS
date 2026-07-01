@@ -16,6 +16,7 @@ const Requests = lazy(() => import('./pages/Requests'))
 const BlockchainLogs = lazy(() => import('./pages/BlockchainLogs'))
 const MyRequests = lazy(() => import('./pages/MyRequests'))
 const Fulfillment = lazy(() => import('./pages/Fulfillment'))
+const Users = lazy(() => import('./pages/Users'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,8 +27,9 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
     mutations: {
-      retry: 3,
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      // Do not retry mutations: create/approve actions trigger on-chain
+      // transactions and must never be duplicated automatically.
+      retry: false,
     },
   },
 })
@@ -74,7 +76,9 @@ function App() {
             <Route path="/my-requests" element={<ProtectedRoute><MyRequests /></ProtectedRoute>} />
             <Route path="/fulfillment" element={<ProtectedRoute><Fulfillment /></ProtectedRoute>} />
             <Route path="/blockchain" element={<ProtectedRoute><BlockchainLogs /></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Suspense>
       </ErrorBoundary>
