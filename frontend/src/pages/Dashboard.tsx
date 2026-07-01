@@ -7,14 +7,13 @@ import {
   Boxes,
   Clock,
   CheckCircle,
-  GraphUp,                      // ✅ correct Bootstrap icon for "trending up"
+  GraphUp,
   Plus,
   Eye,
   Link45deg,
   BarChart as BarChartIcon,
   Activity,
-  ArrowUpRight,
-  ExclamationTriangleFill as AlertTriangle,
+  ExclamationTriangleFill,
 } from 'react-bootstrap-icons';
 import {
   ResponsiveContainer,

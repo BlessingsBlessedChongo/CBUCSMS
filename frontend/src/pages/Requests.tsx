@@ -14,14 +14,20 @@ const priorityColors: Record<RequestPriority, string> = {
   URGENT: 'danger',
 };
 
-const statusBadgeClass: Record<RequestStatus, string> = {
+const statusBadgeClass: Partial<Record<RequestStatus, string>> = {
   PENDING: 'badge bg-warning text-dark',
   MANAGER_APPROVED: 'badge bg-info text-white',
-  PROCUREMENT_APPROVED: 'badge bg-warning text-dark',
+  MANAGER_REJECTED: 'badge bg-danger text-white',
+  PROCUREMENT_APPROVED: 'badge bg-primary text-white',
+  PROCUREMENT_REJECTED: 'badge bg-danger text-white',
   CFO_APPROVED: 'badge bg-success text-white',
-  FULFILLED: 'badge bg-success text-white',
-  REJECTED: 'badge bg-danger text-white',
+  CFO_REJECTED: 'badge bg-danger text-white',
+  FULFILLED: 'badge bg-secondary text-white',
+  CANCELLED: 'badge bg-dark text-white',
 };
+
+const getStatusBadgeClass = (status: RequestStatus): string =>
+  statusBadgeClass[status] ?? 'badge bg-light text-dark';
 
 export default function Requests() {
   const { user } = useAuth();
@@ -29,6 +35,7 @@ export default function Requests() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<StockRequest | null>(null);
+  const [approvalAction, setApprovalAction] = useState<'approve' | 'reject'>('approve');
   const [rejectionReason, setRejectionReason] = useState('');
 
   const [newRequest, setNewRequest] = useState({ stock: 0, quantity_requested: 1, priority: 'MEDIUM' as RequestPriority, reason: '' });
@@ -75,9 +82,10 @@ export default function Requests() {
       setShowApprovalModal(false);
       setSelectedRequest(null);
       setRejectionReason('');
+      setApprovalAction('approve');
       queryClient.invalidateQueries({ queryKey: ['requests'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      toast.success('Request updated successfully');
+      toast.success(approvalAction === 'reject' ? 'Request rejected' : 'Request approved');
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.detail || 'Failed to update request');
@@ -111,23 +119,21 @@ export default function Requests() {
 
   const handleApprove = (request: StockRequest, action: 'approve' | 'reject') => {
     setSelectedRequest(request);
-    if (action === 'reject') {
-      setRejectionReason('');
-    }
+    setApprovalAction(action);
+    setRejectionReason('');
     setShowApprovalModal(true);
   };
 
   const submitApproval = () => {
     if (!selectedRequest) return;
-    const isRejecting = selectedRequest.status === 'PENDING' && rejectionReason;
-    if (isRejecting && !rejectionReason) {
+    if (approvalAction === 'reject' && !rejectionReason.trim()) {
       toast.error('Rejection reason is required');
       return;
     }
     approveMutation.mutate({
       requestId: selectedRequest.id,
-      action: rejectionReason ? 'reject' : 'approve',
-      reason: rejectionReason,
+      action: approvalAction,
+      reason: approvalAction === 'reject' ? rejectionReason.trim() : undefined,
     });
   };
 
@@ -192,7 +198,7 @@ export default function Requests() {
                         <span className={`badge bg-${priorityColors[req.priority]}`}>{req.priority}</span>
                       </td>
                       <td>
-                        <span className={statusBadgeClass[req.status]}>{req.status.replace(/_/g, ' ')}</span>
+                        <span className={getStatusBadgeClass(req.status)}>{req.status.replace(/_/g, ' ')}</span>
                       </td>
                       <td className="small text-muted">{req.requested_by_username || '—'}</td>
                       <td className="small text-muted">
@@ -327,7 +333,7 @@ export default function Requests() {
               <div className="modal-content border-0">
                 <div className="modal-header border-0 bg-light">
                   <h5 className="modal-title fw-600">
-                    {rejectionReason ? 'Reject Request' : 'Approve Request'}
+                    {approvalAction === 'reject' ? 'Reject Request' : 'Approve Request'}
                   </h5>
                   <button type="button" className="btn-close" onClick={() => setShowApprovalModal(false)} />
                 </div>
@@ -336,7 +342,7 @@ export default function Requests() {
                   <p className="mb-3">
                     <strong>{selectedRequest.stock_name}</strong> - {selectedRequest.quantity_requested} units
                   </p>
-                  {rejectionReason !== undefined && (
+                  {approvalAction === 'reject' ? (
                     <div className="mb-3">
                       <label htmlFor="rejectReason" className="form-label small fw-600">
                         Rejection Reason *
@@ -348,10 +354,14 @@ export default function Requests() {
                         value={rejectionReason}
                         onChange={(e) => setRejectionReason(e.target.value)}
                         placeholder="Please provide a reason for rejection..."
+                        required
                       />
                     </div>
+                  ) : (
+                    <p className="text-muted small mb-0">
+                      This will advance the request to the next approval stage. Are you sure?
+                    </p>
                   )}
-                  <p className="text-muted small">Are you sure?</p>
                 </div>
                 <div className="modal-footer bg-light">
                   <button type="button" className="btn btn-outline-secondary" onClick={() => setShowApprovalModal(false)}>
@@ -359,11 +369,15 @@ export default function Requests() {
                   </button>
                   <button
                     type="button"
-                    className={`btn ${rejectionReason ? 'btn-danger' : 'btn-success'}`}
+                    className={`btn ${approvalAction === 'reject' ? 'btn-danger' : 'btn-success'}`}
                     onClick={submitApproval}
                     disabled={approveMutation.isPending}
                   >
-                    {approveMutation.isPending ? 'Processing...' : rejectionReason ? 'Reject' : 'Approve'}
+                    {approveMutation.isPending
+                      ? 'Processing...'
+                      : approvalAction === 'reject'
+                        ? 'Confirm Reject'
+                        : 'Confirm Approve'}
                   </button>
                 </div>
               </div>

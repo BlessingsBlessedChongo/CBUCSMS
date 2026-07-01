@@ -70,10 +70,13 @@ export interface StockUpdateQuantityPayload {
 export type RequestStatus =
   | 'PENDING'
   | 'MANAGER_APPROVED'
+  | 'MANAGER_REJECTED'
   | 'PROCUREMENT_APPROVED'
+  | 'PROCUREMENT_REJECTED'
   | 'CFO_APPROVED'
+  | 'CFO_REJECTED'
   | 'FULFILLED'
-  | 'REJECTED';
+  | 'CANCELLED';
 
 export type RequestPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 
@@ -137,20 +140,27 @@ export type BlockchainAction =
 
 export interface BlockchainLog {
   id: number;
-  request_id: number;
+  stock_request: number;
+  user: number | null;
   action: BlockchainAction;
   transaction_hash: string;
   block_number: number;
-  timestamp: string;
-  status: 'SUCCESS' | 'FAILED';
+  metadata?: Record<string, unknown>;
+  created_at: string;
 }
 
+/**
+ * Shape returned by GET /api/blockchain/verify/
+ * (see BlockchainService.verify_connection in the Django backend).
+ */
 export interface BlockchainStatus {
   connected: boolean;
-  contract_address: string;
-  current_block: number;
-  total_requests_on_chain: number;
-  wallet_address?: string;
+  chain_id: number | null;
+  block_number: number | null;
+  contract_loaded?: boolean;
+  contract_address: string | null;
+  account_address: string | null;
+  account_balance: number | string | null;
 }
 
 // ============ DASHBOARD ============
