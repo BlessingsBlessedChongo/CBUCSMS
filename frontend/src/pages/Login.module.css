@@ -1,0 +1,24 @@
+/* src/pages/Login.module.css */
+.container {
+  /* optional overrides */
+}
+
+.button {
+  background: linear-gradient(135deg, #1a5276, #2980b9);
+  border: none;
+  transition: opacity 0.2s;
+}
+.button:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.spinner {
+  width: 3.5rem !important;
+  height: 3.5rem !important;
+}
+
+/* demo credentials box inside footer */
+.demoCredentials {
+  margin-bottom: 1rem;
+  text-align: left;
+}
