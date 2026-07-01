@@ -1,0 +1,40 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\Blessings Chongo\\cbucsms\\blockchain\\contracts\\RestockApproval.sol": {
+      "lastModificationDate": 1776031571056,
+      "contentHash": "feb3fc83ab7bb232a73612eb55ef7921",
+      "sourceName": "contracts/RestockApproval.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "RestockApproval"
+      ]
+    }
+  }
+}
