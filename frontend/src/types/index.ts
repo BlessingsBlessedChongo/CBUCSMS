@@ -1,9 +1,6 @@
 /**
  * CBUCSMS Frontend Type Definitions
- * Complete TypeScript interfaces for all API responses and component props
  */
-
-// ============ AUTH & USER ============
 
 export type UserRole = 'ADMIN' | 'MANAGER' | 'PROCUREMENT' | 'CFO' | 'STOREKEEPER' | 'DEPARTMENT';
 
@@ -16,13 +13,39 @@ export interface User {
   wallet_address: string;
 }
 
+export interface UserAccount extends User {
+  is_active: boolean;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+}
+
+export interface UserCreatePayload {
+  username: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  department?: string;
+}
+
+export interface UserUpdatePayload {
+  role?: UserRole;
+  is_active?: boolean;
+  department?: string;
+}
+
 export interface AuthResponse {
   access: string;
   refresh: string;
   user: User;
 }
 
-// ============ INVENTORY (STOCK) ============
+export interface ApiErrorResponse {
+  detail?: string;
+  error?: string;
+  message?: string;
+  [key: string]: unknown;
+}
 
 export type StockStatus = 'AVAILABLE' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'DAMAGED';
 
@@ -42,7 +65,7 @@ export interface Stock {
   current_quantity: number;
   min_threshold: number;
   location?: string;
-  cost_per_item?: string | number;
+  cost_per_item?: number | string;
   status: StockStatus;
   created_at?: string;
   updated_at?: string;
@@ -64,8 +87,6 @@ export interface StockUpdateQuantityPayload {
   quantity: number;
   reason?: string;
 }
-
-// ============ REQUESTS & APPROVALS ============
 
 export type RequestStatus =
   | 'PENDING'
@@ -91,8 +112,6 @@ export interface StockRequest {
   status: RequestStatus;
   reason: string;
   department?: string;
-  
-  // Approval fields (read-only from backend)
   manager_approval_date?: string;
   manager_approval_reason?: string;
   procurement_approval_date?: string;
@@ -103,16 +122,10 @@ export interface StockRequest {
   rejection_reason?: string;
   rejected_by?: string;
   rejection_stage?: string;
-  
-  // Fulfillment
   fulfilled_date?: string;
   fulfilled_by_username?: string;
-  
-  // Blockchain
   blockchain_tx_hash?: string;
   blockchain_tx_verified?: boolean;
-  
-  // Timestamps
   created_at: string;
   updated_at?: string;
 }
@@ -128,8 +141,6 @@ export interface StockRequestApprovalPayload {
   action: 'approve' | 'reject';
   rejection_reason?: string;
 }
-
-// ============ BLOCKCHAIN ============
 
 export type BlockchainAction =
   | 'REQUEST_CREATED'
@@ -149,10 +160,6 @@ export interface BlockchainLog {
   created_at: string;
 }
 
-/**
- * Shape returned by GET /api/blockchain/verify/
- * (see BlockchainService.verify_connection in the Django backend).
- */
 export interface BlockchainStatus {
   connected: boolean;
   chain_id: number | null;
@@ -163,14 +170,14 @@ export interface BlockchainStatus {
   account_balance: number | string | null;
 }
 
-// ============ DASHBOARD ============
-
 export interface DashboardOverview {
   total_stocks: number;
   low_stock_count: number;
+  out_of_stock_count?: number;
   total_requests: number;
   pending_requests: number;
   approved_requests: number;
+  rejected_requests?: number;
   pending_for_user: number;
   blockchain_logs_count: number;
   latest_block: number;
@@ -195,25 +202,12 @@ export interface DashboardStats {
   charts: DashboardCharts;
 }
 
-// ============ PAGINATED RESPONSES ============
-
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
   previous: string | null;
   results: T[];
 }
-
-// ============ ERROR HANDLING ============
-
-export interface ApiErrorResponse {
-  detail?: string;
-  error?: string;
-  message?: string;
-  [key: string]: unknown;
-}
-
-// ============ COMPONENT PROPS ============
 
 export interface RoleBasedProps {
   allowedRoles: UserRole[];
@@ -224,3 +218,15 @@ export interface LoadingProps {
   isLoading: boolean;
   error?: Error | null;
 }
+
+export const CBU_LOGO_URL =
+  'https://www.cbu.ac.zm/opus/assets/images/correct%20logo.png';
+
+export const DEMO_ACCOUNTS = [
+  { label: 'Admin', username: 'admin', password: 'admin123', role: 'ADMIN' as UserRole },
+  { label: 'Manager', username: 'manager', password: 'manager123', role: 'MANAGER' as UserRole },
+  { label: 'Procurement', username: 'procurement', password: 'proc123', role: 'PROCUREMENT' as UserRole },
+  { label: 'CFO', username: 'cfo', password: 'cfo123', role: 'CFO' as UserRole },
+  { label: 'Storekeeper', username: 'storekeeper', password: 'store123', role: 'STOREKEEPER' as UserRole },
+  { label: 'Department', username: 'dean_science', password: 'science123', role: 'DEPARTMENT' as UserRole },
+];
